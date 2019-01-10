@@ -90,13 +90,12 @@ func (h *lphttp) Ping(context context.Context, req *net.PingPong) (*net.PingPong
 func StartTranscodeServer(orch Orchestrator, bind string, mux *http.ServeMux, workDir string) {
 	s := grpc.NewServer()
 	lp := lphttp{
-		orchestrator: orch,
-		orchRpc:      s,
-		transRpc:     mux,
+		orchRpc:  s,
+		transRpc: mux,
 	}
 	net.RegisterOrchestratorServer(s, &lp)
 	net.RegisterTranscoderServer(s, &lp)
-	lp.transRpc.HandleFunc("/segment", lp.ServeSegment)
+	lp.transRpc.Handle("/segment", ServeSegment(orch))
 	lp.transRpc.HandleFunc("/transcodeResults", lp.TranscodeResults)
 
 	cert, key, err := getCert(orch.ServiceURI(), workDir)
